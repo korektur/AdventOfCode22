@@ -17,12 +17,7 @@ int main() {
         int fst = line[0] - 'A';
         int snd = line[2] - 'X';
         //part1
-        if (fst == snd) {
-            score += 3;
-        } else if ((fst + 1) % 3 == snd) {
-            score += 6;
-        }
-        score += snd + 1;
+        score += snd + 1 + 3 * ((snd - fst + 3 + 1) % 3);
 
         //part2
         score2 += 3 * snd + (fst + (snd - 1) + 3) % 3 + 1;
