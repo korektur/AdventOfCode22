@@ -6,9 +6,7 @@ using namespace std;
 
 int main() {
     ifstream infile("day1/day1.in");
-    if (!infile) {
-        cout << "File not created!";
-    }
+
     int top[3];
     int cur = 0;
     string line;

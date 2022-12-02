@@ -6,9 +6,6 @@ using namespace std;
 
 int main() {
     ifstream infile("day2/day2.in");
-    if (!infile) {
-        cout << "File not created!";
-    }
 
     string line;
     int score = 0;
