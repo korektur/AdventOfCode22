@@ -6,10 +6,6 @@
 
 using namespace std;
 
-constexpr inline size_t charToNum(const char &c) {
-    return c > 'Z' ? c - 'a' : (c - 'A' + 26);
-}
-
 int main() {
     ifstream infile("day4/day4.in");
     string line;
