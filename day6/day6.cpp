@@ -2,20 +2,19 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <unordered_map>
+
 using namespace std;
 
-size_t find_marker(string& line, int marker_size) {
-    int start = 0;
-    while(start < line.length() - marker_size) {
-        int i = 0;
-        for(; i < marker_size - 1; ++i) {
-            auto end = line.begin() + start + marker_size;
-            if (find(line.begin() + start + i + 1, end, line[start + i]) != end) {
-                break;
-            }
+size_t find_marker(string &line, int marker_size) {
+    unordered_map<char, size_t> m;
+    size_t start = 0, end = 0;
+    while (end - start < marker_size) {
+        char c = line[end];
+        if (m.contains(c)) {
+            start = max(start, m[c] + 1);
         }
-        if (i == marker_size - 1) break;
-        start += i + 1;
+        m[c] = end++;
     }
     return start + marker_size;
 }
