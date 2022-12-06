@@ -6,14 +6,12 @@
 
 using namespace std;
 
-size_t find_marker(string &line, int marker_size) {
+size_t find_marker(const string &line, size_t marker_size) {
     unordered_map<char, size_t> m;
     size_t start = 0, end = 0;
     while (end - start < marker_size) {
         char c = line[end];
-        if (m.contains(c)) {
-            start = max(start, m[c] + 1);
-        }
+        if (m.contains(c)) start = max(start, m[c] + 1);
         m[c] = end++;
     }
     return start + marker_size;
