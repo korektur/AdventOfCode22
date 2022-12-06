@@ -14,7 +14,7 @@ size_t find_marker(const string &line, size_t marker_size) {
         if (m.contains(c)) start = max(start, m[c] + 1);
         m[c] = end++;
     }
-    return start + marker_size;
+    return end;
 }
 
 int main() {
