@@ -10,18 +10,19 @@ inline bool shouldMove(const pair<int, int> &fst, const pair<int, int> &snd) {
     return abs(fst.first - snd.first) > 1 || abs(fst.second - snd.second) > 1;
 }
 
+constexpr inline int compare(const int &fst, const int &snd) {
+    return fst == snd ? 0 : (fst > snd ? 1 : -1);
+}
+
 size_t simulate(size_t rope_size) {
     ifstream infile("day9/day9.in");
     string line;
     vector<pair<int, int>> rope(rope_size, make_pair(0, 0));
-    char direction;
-    int steps;
     unordered_set<ll> visited;
     while (getline(infile, line)) {
-        direction = line[0];
-        steps = stoi(line.substr(2));
-
-        for (int j = 0; j < steps; ++j) {
+        char direction = line[0];
+        size_t steps = stoi(line.substr(2));
+        for (size_t j = 0; j < steps; ++j) {
             switch(direction) {
                 case 'U': rope[0].second += 1; break;
                 case 'D': rope[0].second -= 1; break;
@@ -30,12 +31,8 @@ size_t simulate(size_t rope_size) {
             }
 
             for (int i = 1; i < rope_size && shouldMove(rope[i - 1], rope[i]); ++i) {
-                if (rope[i].second != rope[i - 1].second) {
-                    rope[i].second += (rope[i - 1].second > rope[i].second) ? 1 : -1;
-                }
-                if (rope[i].first != rope[i - 1].first) {
-                    rope[i].first += (rope[i - 1].first > rope[i].first) ? 1 : -1;
-                }
+                rope[i].second += compare(rope[i - 1].second, rope[i].second);
+                rope[i].first += compare(rope[i - 1].first, rope[i].first);
             }
 
             visited.insert(((ll) rope.back().first) * 10000 + rope.back().second);
