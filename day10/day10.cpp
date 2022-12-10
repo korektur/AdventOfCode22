@@ -11,14 +11,14 @@ int crt = 0;
 string crtLine;
 
 void incrementIteration() {
-    crtLine += abs(crt++ - x) <= 1 ? "#" : ".";
-    if (crtLine.size() == 40) {
+    crtLine += abs(crt - x) <= 1 ? "#" : ".";
+    if (++crt == 40) {
         crt = 0;
         cout << crtLine << endl;
         crtLine = string();
         crtLine.reserve(40);
     }
-    if (++iteration == 20 || (iteration - 20) % 40 == 0) ans += x * iteration;
+    if (++iteration % 40 == 20) ans += x * iteration;
 }
 
 int main() {
