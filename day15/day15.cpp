@@ -30,15 +30,14 @@ int main() {
         dists.push_back(distance);
     }
 
-    for(int64_t y = 0; y < 4000000; ++y) {
+    vector<pair<int64_t, int64_t>> segments;
+    for(int64_t y = 0; y <= 4000000; ++y) {
+        segments.clear();
         uint64_t ans = 0;
-        vector<pair<int64_t, int64_t>> segments;
         for (int64_t i = 0; i < sensors.size(); ++i) {
             int64_t rem = dists[i] - abs(sensors[i].second - y);
             if (rem < 0) continue;
-            int64_t l = sensors[i].first - rem;
-            int64_t r = sensors[i].first + rem;
-            segments.emplace_back(l, r);
+            segments.emplace_back(sensors[i].first - rem, sensors[i].first + rem);
         }
         sort(segments.begin(), segments.end());
         int64_t start = segments[0].first;
