@@ -49,9 +49,9 @@ int main() {
             start = max(start, segment.first);
             if (start < segment.second) {
                 ans += segment.second - start + 1;
-                for (const auto &beacon: beacons[y]) {
-                    if (beacon >= start && beacon <= segment.second) {
-                        --ans;
+                if (y == 2000000 && beacons.contains(y)) {
+                    for (const auto &beacon: beacons[y]) {
+                        if (beacon >= start && beacon <= segment.second) --ans;
                     }
                 }
                 start = segment.second + 1;
