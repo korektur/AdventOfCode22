@@ -1,9 +1,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <algorithm>
 #include <unordered_map>
-#include <unordered_set>
 #include <queue>
 #include <utility>
 #include <chrono>
@@ -16,7 +14,6 @@ unordered_map<string, vector<string>> graph;
 unordered_map<string, unordered_map<string, int>> paths;
 vector<string> valves;
 vector<string> valvesWithPositiveFlow;
-int positiveFlowValvesCnt = 0;
 unordered_map<string, unordered_map<int, unordered_map<size_t, int>>> visited;
 unordered_map<string, int> ordering;
 
@@ -56,9 +53,8 @@ int traverse(const string &valve, int time, size_t state) {
         int pts = flows[to] * timeLeft;
         if (time <= l + 1) continue;
         state |= 1UL << ordering[to];
-        int res = pts + traverse(to, timeLeft, state);
+        ans = max(ans, pts + traverse(to, timeLeft, state));
         state &= ~(1UL << ordering[to]);
-        ans = max(ans, res);
     }
     visited[valve][time][state] = ans;
     return ans;
@@ -78,7 +74,7 @@ int traverseWithHelp(const string &valve, int time, size_t state) {
             state &= ~(1UL << ordering[to]);
         }
     }
-    ans = max(ans, traverse("AA", steps, state));
+    if (time < 15) ans = max(ans, traverse("AA", steps, state));
     return ans;
 }
 
@@ -100,7 +96,6 @@ int main() {
         }
         graph[valveName] = tunnels;
         if (flowRate > 0) {
-            positiveFlowValvesCnt++;
             valvesWithPositiveFlow.push_back(valveName);
             ordering[valveName] = z++;
         }
@@ -112,11 +107,9 @@ int main() {
     cout << "Answer1: " << traverse("AA", 30, 0) << endl;
     auto stop1 = high_resolution_clock::now();
     cout << "answer1 took " << duration_cast<milliseconds>(stop1 - start1).count() << "ms" << endl;
-    visited.clear();
     auto start2 = high_resolution_clock::now();
 
     cout << "Answer2: " << traverseWithHelp("AA", steps, 0) << endl;
     auto stop2 = high_resolution_clock::now();
-    cout << "answer1 took " << duration_cast<milliseconds>(stop2 - start2).count() << "ms" << endl;
-
+    cout << "answer2 took " << duration_cast<milliseconds>(stop2 - start2).count() << "ms" << endl;
 }
