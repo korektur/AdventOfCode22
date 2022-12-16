@@ -6,14 +6,20 @@
 #include <unordered_set>
 #include <queue>
 #include <utility>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
+
 unordered_map<string, int> flows;
 unordered_map<string, vector<string>> graph;
 unordered_map<string, unordered_map<string, int>> paths;
 unordered_map<string, bool> isOpen;
 vector<string> valves;
+vector<string> valvesWithPositiveFlow;
 int positiveFlowValvesCnt = 0;
+unordered_map<string, unordered_map<int, unordered_map<size_t, int>>> visited;
+unordered_map<string, int> ordering;
 
 void floyd() {
     for (int i = 0; i < valves.size(); ++i) {
@@ -40,32 +46,48 @@ void floyd() {
     }
 }
 
-uint64_t traverse(const string &valve, int time) {
-    uint64_t ans = 0;
-    for (const auto &to: paths[valve]) {
-        if (flows[to.first] > 0 && !isOpen[to.first] && time >= to.second + 1) {
-            isOpen[to.first] = true;
-            ans = max(ans, flows[to.first] * (time - to.second - 1) + traverse(to.first, time - to.second - 1));
-            isOpen[to.first] = false;
-        }
+int traverse(const string &valve, int time, size_t state) {
+    if (visited[valve][time][state] != 0) return visited[valve][time][state];
+    int ans = 0;
+    if (time <= 2) return 0;
+    for (const auto &to: valvesWithPositiveFlow) {
+        if (to == valve || ((state >> ordering[to]) & 1U) == 1 || flows[to] == 0) continue;
+        int l = paths[valve][to];
+        int timeLeft = time - l - 1;
+        int pts = flows[to] * timeLeft;
+        if (time <= l + 1) continue;
+        state |= 1UL << ordering[to];
+        int res = pts + traverse(to, timeLeft, state);
+        state &= ~(1UL << ordering[to]);
+        ans = max(ans, res);
     }
+    visited[valve][time][state] = ans;
     return ans;
 }
 
-//struct Task {
-//    int timeLeft;
-//    ::uint64_t curScore;
-//    string valve;
-//
-//    Task(int timeLeft, uint64_t curScore, string valve) : timeLeft(timeLeft), curScore(curScore), valve(std::move(valve)) {}
-//};
-//
-//uint64_t traverseWithHelp(const string& valve1, const string& valve2, int time) {
-//}
+int traverseWithHelp(const string &valve1, int time1, size_t state) {
+    int ans = 0;
+    //just you
+    if (time1 > 2) {
+        for (const auto &to: valvesWithPositiveFlow) {
+            if (to == valve1 || ((state >> ordering[to]) & 1U) == 1 || flows[to] == 0) continue;
+            int l = paths[valve1][to];
+            int timeLeft = time1 - l - 1;
+            int pts = flows[to] * (time1 - l - 1);
+            if (timeLeft <= 0) continue;
+            state |= 1UL << ordering[to];
+            ans = max(ans, pts + traverseWithHelp(to, timeLeft, state));
+            state &= ~(1UL << ordering[to]);
+        }
+    }
+    ans = max(ans, traverse("AA", 26, state));
+    return ans;
+}
 
 int main() {
     ifstream infile("day16/day16.in");
     string line;
+    int z = 0;
     while (getline(infile, line)) {
         string valveName = line.substr(6, 2);
         size_t offset = line.find('=') + 1;
@@ -80,11 +102,24 @@ int main() {
         }
         graph[valveName] = tunnels;
         isOpen[valveName] = false;
-        if (flowRate > 0) positiveFlowValvesCnt++;
+        if (flowRate > 0) {
+            positiveFlowValvesCnt++;
+            valvesWithPositiveFlow.push_back(valveName);
+            ordering[valveName] = z++;
+        }
         valves.push_back(valveName);
     }
 
     floyd();
-    cout << "Answer1: " << traverse("AA", 30) << endl;
-//    cout << "Answer2: " << traverseWithHelp("AA", "AA", 26) << endl;
+    auto start1 = high_resolution_clock::now();
+    cout << "Answer1: " << traverse("AA", 30, 0) << endl;
+    auto stop1 = high_resolution_clock::now();
+    cout << "answer1 took " << duration_cast<milliseconds>(stop1 - start1).count() << "ms" << endl;
+    visited.clear();
+    auto start2 = high_resolution_clock::now();
+
+    cout << "Answer2: " << traverseWithHelp("AA", 26, 0) << endl;
+    auto stop2 = high_resolution_clock::now();
+    cout << "answer1 took " << duration_cast<milliseconds>(stop2 - start2).count() << "ms" << endl;
+
 }
