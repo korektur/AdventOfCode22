@@ -10,11 +10,10 @@
 
 using namespace std;
 using namespace std::chrono;
-
+int steps = 26;
 unordered_map<string, int> flows;
 unordered_map<string, vector<string>> graph;
 unordered_map<string, unordered_map<string, int>> paths;
-unordered_map<string, bool> isOpen;
 vector<string> valves;
 vector<string> valvesWithPositiveFlow;
 int positiveFlowValvesCnt = 0;
@@ -65,22 +64,21 @@ int traverse(const string &valve, int time, size_t state) {
     return ans;
 }
 
-int traverseWithHelp(const string &valve1, int time1, size_t state) {
+int traverseWithHelp(const string &valve, int time, size_t state) {
     int ans = 0;
-    //just you
-    if (time1 > 2) {
+    if (time > 2) {
         for (const auto &to: valvesWithPositiveFlow) {
-            if (to == valve1 || ((state >> ordering[to]) & 1U) == 1 || flows[to] == 0) continue;
-            int l = paths[valve1][to];
-            int timeLeft = time1 - l - 1;
-            int pts = flows[to] * (time1 - l - 1);
+            if (to == valve || ((state >> ordering[to]) & 1U) == 1 || flows[to] == 0) continue;
+            int l = paths[valve][to];
+            int timeLeft = time - l - 1;
             if (timeLeft <= 0) continue;
+            int pts = flows[to] * timeLeft;
             state |= 1UL << ordering[to];
             ans = max(ans, pts + traverseWithHelp(to, timeLeft, state));
             state &= ~(1UL << ordering[to]);
         }
     }
-    ans = max(ans, traverse("AA", 26, state));
+    ans = max(ans, traverse("AA", steps, state));
     return ans;
 }
 
@@ -101,7 +99,6 @@ int main() {
             offset += 4;
         }
         graph[valveName] = tunnels;
-        isOpen[valveName] = false;
         if (flowRate > 0) {
             positiveFlowValvesCnt++;
             valvesWithPositiveFlow.push_back(valveName);
@@ -118,7 +115,7 @@ int main() {
     visited.clear();
     auto start2 = high_resolution_clock::now();
 
-    cout << "Answer2: " << traverseWithHelp("AA", 26, 0) << endl;
+    cout << "Answer2: " << traverseWithHelp("AA", steps, 0) << endl;
     auto stop2 = high_resolution_clock::now();
     cout << "answer1 took " << duration_cast<milliseconds>(stop2 - start2).count() << "ms" << endl;
 
