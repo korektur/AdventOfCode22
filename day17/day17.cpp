@@ -3,7 +3,6 @@
 #include <fstream>
 #include <algorithm>
 #include <unordered_map>
-#include <functional>
 #include <deque>
 
 using namespace std;
@@ -104,8 +103,8 @@ bool moveDown(int i) {
 
 void mark_done(int i) {
     for (; i < tetris.size(); ++i) {
-        for (int j = 0; j < tetris[i].size(); ++j) {
-            if (tetris[i][j] == 1) tetris[i][j] = 2;
+        for (int & j : tetris[i]) {
+            if (j == 1) j = 2;
         }
     }
 }
@@ -150,11 +149,7 @@ int main() {
         while (true) {
             char action = pattern[curAction];
             curAction = (curAction + 1) % pattern.size();
-            if (action == '<') {
-                moveLeft(ptr);
-            } else {
-                moveRight(ptr);
-            }
+            if (action == '<') moveLeft(ptr); else moveRight(ptr);
             if (!moveDown(ptr)) {
                 mark_done(ptr);
                 while (tetris.size() > 60) {
