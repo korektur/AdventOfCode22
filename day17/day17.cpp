@@ -104,17 +104,11 @@ bool moveDown(int i) {
 }
 
 void mark_done(int i) {
-    for (; i < tetris.size(); ++i) {
-        for (int & j : tetris[i]) {
-            if (j == 1) j = 2;
-        }
-    }
+    for (; i < tetris.size(); ++i) std::replace(tetris[i].begin(), tetris[i].end(), 1, 2);
 }
 
 void toInt(const vector<int> &v, uint64_t & hash, int base) {
-    for (int i = 0; i < v.size(); ++i) {
-        if (v[i] == 2) hash |= 1ULL << (i + base);
-    }
+    for (int i = 0; i < v.size(); ++i) if (v[i] == 2) hash |= 1ULL << (i + base);
 }
 
 unordered_map<size_t, unordered_map<::uint64_t , pair<uint64_t, uint64_t>>> statesHash;
