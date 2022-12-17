@@ -4,8 +4,10 @@
 #include <algorithm>
 #include <unordered_map>
 #include <deque>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 deque<vector<int>> tetris;
 
@@ -120,6 +122,7 @@ int toInt(const vector<int> &v) {
 unordered_map<string, pair<uint64_t, uint64_t>> statesHash;
 
 int main() {
+    auto start1 = high_resolution_clock::now();
     ifstream infile("day17/day17.in");
     string pattern;
     getline(infile, pattern);
@@ -131,7 +134,7 @@ int main() {
         initialize();
         int ptr = (int) tetris.size();
         if (curFigure == 1 && tetris.size() == 63) {
-            string hash = to_string(curAction) + "_" + to_string(curFigure) + "_" + to_string(toInt(tetris[ptr - 4])) +
+            string hash = to_string(curAction) + "_" + to_string(toInt(tetris[ptr - 4])) +
                           to_string(toInt(tetris[ptr - 5])) + to_string(toInt(tetris[ptr - 6]));
             if (statesHash.contains(hash)) {
                 auto &res = statesHash[hash];
@@ -163,4 +166,6 @@ int main() {
     }
 
     cout << "Answer2: " << ans << endl;
+    auto stop1 = high_resolution_clock::now();
+    cout << "answer took " << duration_cast<milliseconds>(stop1 - start1).count() << "ms" << endl;
 }
