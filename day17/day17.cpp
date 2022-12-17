@@ -111,15 +111,13 @@ void mark_done(int i) {
     }
 }
 
-int toInt(const vector<int> &v) {
-    int res = 0;
+void toInt(const vector<int> &v, uint64_t & hash, int base) {
     for (int i = 0; i < v.size(); ++i) {
-        if (v[i] == 2) res |= 1 << i;
+        if (v[i] == 2) hash |= 1ULL << (i + base);
     }
-    return res;
 }
 
-unordered_map<string, pair<uint64_t, uint64_t>> statesHash;
+unordered_map<size_t, unordered_map<::uint64_t , pair<uint64_t, uint64_t>>> statesHash;
 
 int main() {
     auto start1 = high_resolution_clock::now();
@@ -134,17 +132,19 @@ int main() {
         initialize();
         int ptr = (int) tetris.size();
         if (curFigure == 1 && tetris.size() == 63) {
-            string hash = to_string(curAction) + "_" + to_string(toInt(tetris[ptr - 4])) +
-                          to_string(toInt(tetris[ptr - 5])) + to_string(toInt(tetris[ptr - 6]));
-            if (statesHash.contains(hash)) {
-                auto &res = statesHash[hash];
+            ::uint64_t hash = 0;
+            toInt(tetris[ptr - 4], hash, 0);
+            toInt(tetris[ptr - 5], hash, 8);
+            toInt(tetris[ptr - 6], hash, 16);
+            if (statesHash[curAction].contains(hash)) {
+                auto &res = statesHash[curAction][hash];
                 ::uint64_t step = i - res.second;
                 ::uint64_t ansStep = ans - res.first;
                 auto skipping = (1000000000000 - i) / step;
                 ans += ansStep * skipping;
                 i += skipping * step;
             } else {
-                statesHash[hash] = make_pair(ans, i);
+                statesHash[curAction][hash] = make_pair(ans, i);
             }
         }
         figures[curFigure]();
