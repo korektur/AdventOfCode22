@@ -4,10 +4,11 @@
 #include <algorithm>
 #include <unordered_map>
 #include <functional>
+#include <deque>
 
 using namespace std;
 
-vector<vector<int>> tetris;
+deque<vector<int>> tetris;
 
 void createMinus() {
     tetris.push_back({0, 0, 1, 1, 1, 1, 0});
@@ -31,6 +32,7 @@ void createPlank() {
     tetris.push_back({0, 0, 1, 0, 0, 0, 0});
     tetris.push_back({0, 0, 1, 0, 0, 0, 0});
 }
+
 void createCube() {
     tetris.push_back({0, 0, 1, 1, 0, 0, 0});
     tetris.push_back({0, 0, 1, 1, 0, 0, 0});
@@ -43,14 +45,14 @@ void initialize() {
 }
 
 bool moveLeft(int i) {
-    for(int j = i; j < tetris.size(); ++j) {
+    for (int j = i; j < tetris.size(); ++j) {
         if (tetris[j][0] == 1) return false;
         for (int k = 1; k < tetris[i].size(); ++k) {
             if (tetris[j][k] == 1 && tetris[j][k - 1] == 2) return false;
         }
     }
-    for(; i < tetris.size(); ++i) {
-        for(int j = 1; j < tetris[i].size(); ++j) {
+    for (; i < tetris.size(); ++i) {
+        for (int j = 1; j < tetris[i].size(); ++j) {
             if (tetris[i][j] == 1) {
                 tetris[i][j - 1] = 1;
                 tetris[i][j] = 0;
@@ -61,14 +63,14 @@ bool moveLeft(int i) {
 }
 
 bool moveRight(int i) {
-    for(int j = i; j < tetris.size(); ++j) {
+    for (int j = i; j < tetris.size(); ++j) {
         if (tetris[j].back() == 1) return false;
-        for (int k = (int)tetris[i].size() - 2; k >= 0 ; --k) {
+        for (int k = 5; k >= 0; --k) {
             if (tetris[j][k] == 1 && tetris[j][k + 1] == 2) return false;
         }
     }
-    for(; i < tetris.size(); ++i) {
-        for(int j = (int)tetris[i].size() - 2; j >= 0 ; --j) {
+    for (; i < tetris.size(); ++i) {
+        for (int j = 5; j >= 0; --j) {
             if (tetris[i][j] == 1) {
                 tetris[i][j + 1] = 1;
                 tetris[i][j] = 0;
@@ -85,8 +87,8 @@ bool moveDown(int i) {
             if (tetris[k][j] == 1 && tetris[k - 1][j] == 2) return false;
         }
     }
-    for(; i < tetris.size(); ++i) {
-        for(int j = 0; j < tetris[i].size(); ++j) {
+    for (; i < tetris.size(); ++i) {
+        for (int j = 0; j < tetris[i].size(); ++j) {
             if (tetris[i][j] == 1) {
                 tetris[i - 1][j] = tetris[i][j];
                 tetris[i][j] = 0;
@@ -101,26 +103,53 @@ bool moveDown(int i) {
 }
 
 void mark_done(int i) {
-    for(; i < tetris.size(); ++i) {
-        for(int j = 0; j < tetris[i].size(); ++j) {
+    for (; i < tetris.size(); ++i) {
+        for (int j = 0; j < tetris[i].size(); ++j) {
             if (tetris[i][j] == 1) tetris[i][j] = 2;
         }
     }
 }
 
+int toInt(const vector<int> &v) {
+    int res = 0;
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] == 2) res |= 1 << i;
+    }
+    return res;
+}
+
+unordered_map<string, pair<uint64_t, uint64_t>> statesHash;
+
 int main() {
     ifstream infile("day17/day17.in");
     string pattern;
     getline(infile, pattern);
-    auto figures = vector({ createMinus, createPlus, createLShape, createPlank, createCube });
-    int curAction = 0;
-    int curFigure = 0;
-    for(int i = 0; i < 2022; ++i) {
+    auto figures = vector({createMinus, createPlus, createLShape, createPlank, createCube});
+    size_t curAction = 0, curFigure = 0;
+    uint64_t ans = 60;
+    for (uint64_t i = 0; i < 1000000000000; ++i) {
+        if (i == 2023) cout << "Answer1: " << ans << endl;
         initialize();
         int ptr = (int) tetris.size();
-        figures[(curFigure++) % figures.size()]();
-        while(true) {
-            char action = pattern[(curAction++) % pattern.size()];
+        if (curFigure == 1 && tetris.size() == 63) {
+            string hash = to_string(curAction) + "_" + to_string(curFigure) + "_" + to_string(toInt(tetris[ptr - 4])) +
+                          to_string(toInt(tetris[ptr - 5])) + to_string(toInt(tetris[ptr - 6]));
+            if (statesHash.contains(hash)) {
+                auto &res = statesHash[hash];
+                ::uint64_t step = i - res.second;
+                ::uint64_t ansStep = ans - res.first;
+                auto skipping = (1000000000000 - i) / step;
+                ans += ansStep * skipping;
+                i += skipping * step;
+            } else {
+                statesHash[hash] = make_pair(ans, i);
+            }
+        }
+        figures[curFigure]();
+        curFigure = (curFigure + 1) % figures.size();
+        while (true) {
+            char action = pattern[curAction];
+            curAction = (curAction + 1) % pattern.size();
             if (action == '<') {
                 moveLeft(ptr);
             } else {
@@ -128,16 +157,15 @@ int main() {
             }
             if (!moveDown(ptr)) {
                 mark_done(ptr);
+                while (tetris.size() > 60) {
+                    tetris.pop_front();
+                    ans++;
+                }
                 break;
             }
             --ptr;
         }
     }
 
-    cout << tetris.size() << endl;
-//    for(int i = tetris.size() - 1; i >= 0; --i) {
-//        cout << '|';
-//        for (int j = 0; j < 7; ++j) cout << (tetris[i][j] == 0 ? '.' : '#');
-//        cout << '|' << endl;
-//    }
+    cout << "Answer2: " << ans << endl;
 }
