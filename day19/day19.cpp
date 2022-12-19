@@ -32,7 +32,7 @@ constexpr inline uint16_t time_to_build(int resources, int required, int robot_c
 }
 
 uint32_t dfs(const shared_ptr<State>& current, int ore_r, int clay_r, int obs_r, int geode_r, Blueprint *b, int minute) {
-    if (geode_r == 0 && minute < 4) return 0;
+    if (geode_r == 0 && minute < 4) return 0; //arbitrary optimization that might not be correct, but works for my input
     uint32_t res = minute * geode_r + current->geode;
 
     if (ore_r < b->clay_robot_cost || ore_r < b->obs_robot_cost_ore || ore_r < b->geode_robot_cost_ore) {
