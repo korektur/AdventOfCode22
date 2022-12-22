@@ -39,18 +39,11 @@ int score(int x, int y, pair<int, int> direction) {
     return score;
 }
 
-int main() {
-    ifstream infile("day22/day22.in");
-    string line;
-    while (getline(infile, line) && !line.empty()) {
-        map.push_back(line);
-    }
-
+void part1(const string& line) {
+    int i = 0;
     int x = (int) map[0].find_first_of('.');
     int y = 0;
     pair<int, int> direction(1, 0);
-    getline(infile, line);
-    int i = 0;
     while(i < line.length()) {
         int k = 0;
         while (i + k < line.length() && line[i + k] >= '0' && line[i + k] <= '9') k++;
@@ -92,7 +85,19 @@ int main() {
             direction = rotate(line[i++], direction);
         }
     }
-    cout << score(x, y, direction) << endl;
+    cout << "Answer1: " << score(x, y, direction) << endl;
+}
+
+int main() {
+    ifstream infile("day22/day22.in");
+    string line;
+    while (getline(infile, line) && !line.empty()) {
+        map.push_back(line);
+    }
+
+
+    getline(infile, line);
+    part1(line);
 }
 
 #pragma clang diagnostic pop
